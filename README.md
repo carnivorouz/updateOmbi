@@ -9,3 +9,6 @@
 > * SLACK_MESSAGE="Upgrading Ombi to v$VERSION" # Adjust if you'd like a different message to the Slack alert
 > * SLACK_CHANNEL=alerts			# Adjust to the channel you'd use in Slack
 > * SLACK_USER=ombi				# Change to the user you'd like the message to come through as.  It should be dynamic though so no need to change.
+
+This works as a script you can put in or symlink to in /etc/cron.daily or hourly.  That will run it as root.
+If you'd like it to not run it as root, then you should use `visudo` to add `ombi    ALL=NOPASSWD: /bin/systemctl stop ombi.service, /bin/systemctl start ombi.service` to the sudoers file.
