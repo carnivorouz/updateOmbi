@@ -1,5 +1,4 @@
 #!/bin/bash
-# These variables should not normally be modified
 DOWNLOAD=linux-x64.tar.gz
 SERVICE_NAME=ombi
 VERSION=$(curl -s https://github.com/tidusjar/ombi.releases/releases | grep "$DOWNLOAD" | grep -Po ".*\/download\/v([0-9\.]+).*" | awk -F'/' '{print $6}' | tr -d 'v' | sort -n | tail -1)
