@@ -1,10 +1,11 @@
 #!/bin/bash
+TIMESTAMP=$(date +"%Y-%m-%e %l:%M:%S %t")
 DOWNLOAD=linux-x64.tar.gz
 SERVICE_NAME=ombi
 VERSION=$(curl -s https://github.com/tidusjar/ombi.releases/releases | grep "$DOWNLOAD" | grep -Po ".*\/download\/v([0-9\.]+).*" | awk -F'/' '{print $6}' | tr -d 'v' | sort -n | tail -1)
 SERVICE_LOC=$(systemctl status $SERVICE_NAME | grep -Po "(?<=loaded \()[^;]+")
 WORKING_DIR=$(grep -Po "(?<=WorkingDirectory=).*" $SERVICE_LOC)
-INSTALLED=$(grep -Po "(?<=Ombi/)([\d\.]+)" $WORKING_DIR/Ombi.deps.json | head -1)
+INSTALLED=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -Po '\d+\.\d+\.\d+' | sort -n | tail -n 1)
 BACKUP_DIR=$WORKING_DIR.$INSTALLED
 TEMP_DIR=$WORKING_DIR.$VERSION
 URL=https://github.com/tidusjar/Ombi.Releases/releases/download/v
@@ -15,37 +16,37 @@ SLACK_CHANNEL=alerts
 SLACK_USER=ombi
 
 # Start script
-if [ "$(printf '%s\n' "$VERSION" "$INSTALLED" | sort -V | head -n1)" = "$VERSION" ]; then
-        echo "#### Ombi is up to date ####"
+if [ "$INSTALLED" = "$VERSION" ]; then
+        echo "$TIMESTAMP Ombi is up to date"
 	exit 0
  else
-        echo "#### Upgrading Ombi ####"
+        echo "$TIMESTAMP Upgrading Ombi"
 	curl -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${SLACK_MESSAGE} \"}" https://hooks.slack.com/services/$SLACK_WEBHOOK
 fi
 
-echo  "#### Stopping Ombi ####"
+echo  "$TIMESAMP Stopping Ombi"
 systemctl stop ombi
 
-echo "#### Making a new Ombi directory ####"
+echo "$TIMESTAMP Creating temporary directory $TEMP_DIR"
 mkdir $TEMP_DIR
 cd $TEMP_DIR
 
-echo "#### Downloading Ombi ####"
+echo "$TIMESTAMP Downloading Ombi"
 wget $URL$VERSION/$DOWNLOAD
 
 if [ $? -ne 0 ]; then
-   echo "#### Failed to download ####"
+   echo "$TIMESTAMP Failed to download"
    exit 1
 fi
 
-echo "#### Extracting $DOWNLOAD ####"
+echo "$TIMESTAMP Extracting $DOWNLOAD"
 tar -xf $DOWNLOAD
 
-echo "#### Shuffling directories ####"
+echo "$TIMESTAMP Shuffling directories"
 mv $WORKING_DIR $BACKUP_DIR
 mv $TEMP_DIR $WORKING_DIR
 
-echo "#### Copying over files from $BACKUP_DIR ####"
+echo "$TIMESTAMP Copying over files from $BACKUP_DIR"
 if [ -f $BACKUP_DIR/database.json ]; then
   cp $BACKUP_DIR/database.json $WORKING_DIR
 fi
@@ -67,15 +68,15 @@ if [ -f $BACKUP_DIR/OmbiSettings.db ]; then
 fi
 cp -rn $BACKUP_DIR/wwwroot/images/* $WORKING_DIR/wwwroot/images || true
 
-echo "#### Changing ownership to Ombi ####"
+echo "$TIMESTAMP Changing ownership to ombi"
 chown -R ombi:ombi $WORKING_DIR
 
 if [ $KEEP_BACKUP == "yes" ]; then
-   echo "#### Keeping $BACKUP_DIR ####"
+   echo "$TIMESTAMP Keeping $BACKUP_DIR"
 elif [ $KEEP_BACKUP == "no" ]; then
-   echo "#### Deleting $BACKUP_DIR ####"
+   echo "$TIMESTAMP Deleting $BACKUP_DIR"
    rm -rf $BACKUP_DIR
 fi
 
-echo "#### Starting Ombi ####"
+echo "$TIMESTAMP Starting Ombi"
 systemctl start ombi
