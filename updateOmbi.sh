@@ -10,28 +10,28 @@ BACKUP_DIR=$WORKING_DIR.$INSTALLED
 TEMP_DIR=$WORKING_DIR.$VERSION
 URL=https://github.com/tidusjar/Ombi.Releases/releases/download/v
 KEEP_BACKUP=no
-SLACK_WEBHOOK=
+SLACK_WEBHOOK=T4LRPDYTE/B4LSP537W/ldhFEPNeG2ofvNInN2OrO69h
 SLACK_MESSAGE="Upgrading Ombi to v$VERSION"
 SLACK_CHANNEL=alerts
 SLACK_USER=ombi
 
 # Start script
 if [ "$INSTALLED" = "$VERSION" ]; then
-        echo "$TIMESTAMP Ombi is up to date"
+        echo "$TIMESTAMP $SERVICE_NAME is up to date"
 	exit 0
  else
-        echo "$TIMESTAMP Upgrading Ombi"
+        echo "$TIMESTAMP Upgrading $SERVICE_NAME"
 	curl -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${SLACK_MESSAGE} \"}" https://hooks.slack.com/services/$SLACK_WEBHOOK
 fi
 
-echo  "$TIMESAMP Stopping Ombi"
-systemctl stop ombi
+echo  "$TIMESAMP Stopping $SERVICE_NAME"
+systemctl stop $SERVICE_NAME
 
 echo "$TIMESTAMP Creating temporary directory $TEMP_DIR"
 mkdir $TEMP_DIR
 cd $TEMP_DIR
 
-echo "$TIMESTAMP Downloading Ombi"
+echo "$TIMESTAMP Downloading $SERVICE_NAME"
 wget $URL$VERSION/$DOWNLOAD
 
 if [ $? -ne 0 ]; then
@@ -78,5 +78,5 @@ elif [ $KEEP_BACKUP == "no" ]; then
    rm -rf $BACKUP_DIR
 fi
 
-echo "$TIMESTAMP Starting Ombi"
-systemctl start ombi
+echo "$TIMESTAMP Starting $SERVICE_NAME"
+systemctl start $SERVICE_NAME
