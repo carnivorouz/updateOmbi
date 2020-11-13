@@ -10,6 +10,7 @@ BACKUP_DIR=$WORKING_DIR.$INSTALLED
 TEMP_DIR=$WORKING_DIR.$VERSION
 URL=https://github.com/tidusjar/Ombi.Releases/releases/download/v
 KEEP_BACKUP=no
+SLACK_URL=https://hooks.slack.com/services/
 SLACK_WEBHOOK=
 SLACK_MESSAGE="Updating $SERVICE_NAME to v$VERSION"
 SLACK_CHANNEL=alerts
@@ -21,7 +22,7 @@ if [ "$INSTALLED" = "$VERSION" ]; then
 	exit 0
  else
         echo "$TIMESTAMP Updating $SERVICE_NAME"
-	curl -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${SLACK_MESSAGE} \"}" https://hooks.slack.com/services/$SLACK_WEBHOOK
+	curl -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${SLACK_MESSAGE} \"}" $SLACK_URL$SLACK_WEBHOOK
 fi
 
 echo  "$TIMESAMP Stopping $SERVICE_NAME"
