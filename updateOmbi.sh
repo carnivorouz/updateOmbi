@@ -68,8 +68,8 @@ if [ -f $BACKUP_DIR/OmbiSettings.db ]; then
 fi
 cp -rn $BACKUP_DIR/wwwroot/images/* $WORKING_DIR/wwwroot/images || true
 
-echo "$TIMESTAMP Changing ownership to ombi"
-chown -R ombi:ombi $WORKING_DIR
+echo "$TIMESTAMP Changing ownership to $SERVICE_NAME"
+chown -R $SERVICE_NAME:$SERVICE_NAME $WORKING_DIR
 
 if [ $KEEP_BACKUP == "yes" ]; then
    echo "$TIMESTAMP Keeping $BACKUP_DIR"
