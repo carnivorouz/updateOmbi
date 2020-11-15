@@ -5,7 +5,8 @@ SERVICE_NAME=ombi
 VERSION=$(curl -s https://github.com/tidusjar/$SERVICE_NAME.releases/releases | grep "$DOWNLOAD" | grep -Po ".*\/download\/v([0-9\.]+).*" | awk -F'/' '{print $6}' | tr -d 'v' | sort -n | tail -1)
 SERVICE_LOC=$(systemctl status $SERVICE_NAME | grep -Po "(?<=loaded \()[^;]+")
 WORKING_DIR=$(grep -Po "(?<=WorkingDirectory=).*" $SERVICE_LOC)
-INSTALLED=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -Po '\d+\.\d+\.\d+' | sort -n | tail -n 1)
+INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -Po '\d+\.\d+\.\d+' | sort -n | tail -n 1)
+INSTALLED_2=$(grep Ombi/4 $WORKING_DIR/Ombi.deps.json | head -n 1 | sed 's/.*"Ombi\///;s/": {//')
 BACKUP_DIR=$WORKING_DIR.$INSTALLED
 TEMP_DIR=$WORKING_DIR.$VERSION
 URL=https://github.com/tidusjar/Ombi.Releases/releases/download/v
@@ -17,6 +18,17 @@ SLACK_CHANNEL=alerts
 SLACK_USER=ombi
 
 # Start script
+if [ ! -z "$INSTALLED_1" ]; then
+        echo "$TIMESTAMP $SERVICE_NAME $INSTALLED_1 detected. Continuing..."
+        INSTALLED=$INSTALLED_1
+elif [ ! -z "$INSTALLED_2" ]; then
+        echo "$TIMESTAMP $SERVICE_NAME $INSTALLED_2 detected. Continuing..."
+        INSTALLED=$INSTALLED_2
+else
+        echo "$TIMESTAMP $SERVICE_NAME version not detected. Exiting."
+        exit 1
+fi
+
 if [ "$INSTALLED" = "$VERSION" ]; then
         echo "$TIMESTAMP $SERVICE_NAME is up to date"
 	exit 0
