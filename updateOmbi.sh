@@ -6,7 +6,7 @@ VERSION=$(curl -s https://github.com/tidusjar/$SERVICE_NAME.releases/releases | 
 SERVICE_LOC=$(systemctl status $SERVICE_NAME | grep -Po "(?<=loaded \()[^;]+")
 WORKING_DIR=$(grep -Po "(?<=WorkingDirectory=).*" $SERVICE_LOC)
 INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -Po '\d+\.\d+\.\d+' | sort -n | tail -n 1)
-INSTALLED_2=$(grep Ombi/4 $WORKING_DIR/Ombi.deps.json | head -n 1 | sed 's/.*"Ombi\///;s/": {//')
+INSTALLED_2=$(grep Ombi/4 $WORKING_DIR/Ombi.deps.json 2> /dev/null | head -n 1 | sed 's/.*"Ombi\///;s/": {//')
 BACKUP_DIR=$WORKING_DIR.$INSTALLED
 TEMP_DIR=$WORKING_DIR.$VERSION
 URL=https://github.com/tidusjar/Ombi.Releases/releases/download/v
