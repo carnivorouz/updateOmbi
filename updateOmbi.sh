@@ -22,7 +22,7 @@ elif [ ! -z "$INSTALLED_2" ]; then
         echo "$(date +"%Y-%m-%e %l:%M:%S %t") $SERVICE_NAME $INSTALLED_2 detected. Continuing..."
         INSTALLED=$INSTALLED_2
 else
-        echo "$(date +"%Y-%m-%e %l:%M:%S %t") $SERVICE_NAME version not detected. Exiting."
+        echo "$(date +"%Y-%m-%e %l:%M:%S %t") Currently installed version of $SERVICE_NAME not detected. Exiting."
         exit 1
 fi
 
