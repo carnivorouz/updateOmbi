@@ -6,8 +6,6 @@ SERVICE_LOC=$(systemctl status $SERVICE_NAME | grep -Po "(?<=loaded \()[^;]+")
 WORKING_DIR=$(grep -Po "(?<=WorkingDirectory=).*" $SERVICE_LOC)
 INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -Po '\d+\.\d+\.\d+' | sort -n | tail -n 1)
 INSTALLED_2=$(grep -Po "(?<=Ombi/)([\d\.]+)" 2> /dev/null $WORKING_DIR/Ombi.deps.json | head -1)
-BACKUP_DIR=$WORKING_DIR.$INSTALLED
-TEMP_DIR=$WORKING_DIR.$VERSION
 URL=https://github.com/tidusjar/Ombi.Releases/releases/download/v
 KEEP_BACKUP=no
 SLACK_URL=https://hooks.slack.com/services/
@@ -38,6 +36,9 @@ fi
 
 echo  "$(date +"%Y-%m-%e %l:%M:%S %t") Stopping $SERVICE_NAME"
 systemctl stop $SERVICE_NAME
+
+BACKUP_DIR=$WORKING_DIR.$INSTALLED
+TEMP_DIR=$WORKING_DIR.$VERSION
 
 echo "$(date +"%Y-%m-%e %l:%M:%S %t") Creating temporary directory $TEMP_DIR"
 mkdir $TEMP_DIR
