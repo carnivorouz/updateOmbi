@@ -1,7 +1,7 @@
 #!/bin/bash
 DOWNLOAD=linux-x64.tar.gz
 SERVICE_NAME=ombi
-VERSION=$(curl -s https://github.com/tidusjar/$SERVICE_NAME.releases/releases | grep "$DOWNLOAD" | grep -Po ".*\/download\/v([0-9\.]+).*" | awk -F'/' '{print $6}' | tr -d 'v' | sort -n | tail -1)
+VERSION=$(curl -s https://github.com/tidusjar/ombi.releases/releases | grep "$DOWNLOAD" | grep -Po ".*\/download\/v([0-9\.]+).*" | awk -F'/' '{print $6}' | tr -d 'v' | sort -n | tail -1)
 SERVICE_LOC=$(systemctl status $SERVICE_NAME | grep -Po "(?<=loaded \()[^;]+")
 WORKING_DIR=$(grep -Po "(?<=WorkingDirectory=).*" $SERVICE_LOC)
 INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -Po '\d+\.\d+\.\d+' | sort -n | tail -n 1)
@@ -15,9 +15,11 @@ SLACK_CHANNEL=alerts
 SLACK_USER=ombi
 
 # Start script
+# Check for version info in the executable
 if [ ! -z "$INSTALLED_1" ]; then
         echo "$(date +"%Y-%m-%e %l:%M:%S %t") $SERVICE_NAME $INSTALLED_1 detected. Continuing..."
         INSTALLED=$INSTALLED_1
+# Check for version info before it was in the executable
 elif [ ! -z "$INSTALLED_2" ]; then
         echo "$(date +"%Y-%m-%e %l:%M:%S %t") $SERVICE_NAME $INSTALLED_2 detected. Continuing..."
         INSTALLED=$INSTALLED_2
