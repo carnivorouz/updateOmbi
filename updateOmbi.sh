@@ -6,8 +6,9 @@ SERVICE_LOC=$(systemctl status $SERVICE_NAME | grep -Po "(?<=loaded \()[^;]+")
 WORKING_DIR=$(grep -Po "(?<=WorkingDirectory=).*" $SERVICE_LOC)
 INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -Po '\d+\.\d+\.\d+' | sort -n | tail -n 1)
 INSTALLED_2=$(grep -Po "(?<=Ombi/)([\d\.]+)" 2> /dev/null $WORKING_DIR/Ombi.deps.json | head -1)
+STORAGE_DIR=
 URL=https://github.com/tidusjar/Ombi.Releases/releases/download/v
-KEEP_BACKUP=no
+KEEP_BACKUP=yes
 SLACK_URL=https://hooks.slack.com/services/
 SLACK_WEBHOOK=
 SLACK_MESSAGE="Updating $SERVICE_NAME to v$VERSION"
@@ -39,6 +40,13 @@ fi
 echo  "$(date +"%Y-%m-%d %H:%M:%S.%3N") Stopping $SERVICE_NAME"
 systemctl stop $SERVICE_NAME
 
+# Check to see if directory has a forward slash at the end and correct it
+if [[ $WORKING_DIR = */ ]]; then
+        WORKING_DIR=$(echo $WORKING_DIR | sed 's/.$//')
+else
+        WORKING_DIR=$WORKING_DIR
+fi
+
 BACKUP_DIR=$WORKING_DIR.$INSTALLED
 TEMP_DIR=$WORKING_DIR.$VERSION
 
@@ -47,7 +55,7 @@ mkdir $TEMP_DIR
 cd $TEMP_DIR
 
 echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Downloading $SERVICE_NAME"
-wget $URL$VERSION/$DOWNLOAD
+wget -N $URL$VERSION/$DOWNLOAD
 
 if [ $? -ne 0 ]; then
    echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Failed to download"
@@ -62,26 +70,50 @@ mv $WORKING_DIR $BACKUP_DIR
 mv $TEMP_DIR $WORKING_DIR
 
 echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Copying over files from $BACKUP_DIR"
+
+if [ -f $STORAGE_DIR/database.json ]; then
+  cp $STORAGE_DIR/database.json $WORKING_DIR
+fi
+
 if [ -f $BACKUP_DIR/database.json ]; then
   cp $BACKUP_DIR/database.json $WORKING_DIR
+fi
+
+if [ -f $STORAGE_DIR/database_multi.json ]; then
+  cp $STORAGE_DIR/database_multi.json $WORKING_DIR
 fi
 
 if [ -f $BACKUP_DIR/database_multi.json ]; then
   cp $BACKUP_DIR/database_multi.json $WORKING_DIR
 fi
 
+if [ -f $STORAGE_DIR/Ombi.db ]; then
+  cp $STORAGE_DIR/Ombi.db $WORKING_DIR
+fi
+
 if [ -f $BACKUP_DIR/Ombi.db ]; then
   cp $BACKUP_DIR/Ombi.db $WORKING_DIR
 fi
 
-if [ -f $BACKUP_DIR/OmbiSettings.db ]; then
-  cp $BACKUP_DIR/OmbiSettings.db $WORKING_DIR
+if [ -f $STORAGE_DIR/OmbiSettings.db ]; then
+  cp $STORAGE_DIR/OmbiSettings.db $WORKING_DIR
 fi
 
 if [ -f $BACKUP_DIR/OmbiSettings.db ]; then
   cp $BACKUP_DIR/OmbiSettings.db $WORKING_DIR
 fi
+
+if [ -f $STORAGE_DIR/OmbiExternal.db ]; then
+  cp $STORAGE_DIR/OmbiExternal.db $WORKING_DIR
+fi
+
+if [ -f $BACKUP_DIR/OmbiExternal.db ]; then
+  cp $BACKUP_DIR/OmbiExternal.db $WORKING_DIR
+fi
+
 cp -rn $BACKUP_DIR/wwwroot/images/* $WORKING_DIR/wwwroot/images || true
+
+
 
 echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Changing ownership to $SERVICE_NAME"
 chown -R $SERVICE_NAME:$SERVICE_NAME $WORKING_DIR
