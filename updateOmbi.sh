@@ -8,7 +8,7 @@ INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -
 INSTALLED_2=$(grep -Po "(?<=Ombi/)([\d\.]+)" 2> /dev/null $WORKING_DIR/Ombi.deps.json | head -1)
 STORAGE_DIR=
 URL=https://github.com/tidusjar/Ombi.Releases/releases/download/v
-KEEP_BACKUP=yes
+KEEP_BACKUP=no
 SLACK_URL=https://hooks.slack.com/services/
 SLACK_WEBHOOK=
 SLACK_MESSAGE="Updating $SERVICE_NAME to v$VERSION"
@@ -32,7 +32,10 @@ fi
 if [ "$INSTALLED" = "$VERSION" ]; then
         echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SERVICE_NAME is up to date"
 	exit 0
- else
+elif [ -z $VERSION ]; then
+        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Latest version of $SERVICE_NAME not found. Exiting."
+        exit 1
+else
         echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Updating $SERVICE_NAME"
 	curl -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${SLACK_MESSAGE} \"}" $SLACK_URL$SLACK_WEBHOOK
 fi
