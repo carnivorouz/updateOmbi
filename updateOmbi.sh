@@ -8,15 +8,13 @@ INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -
 INSTALLED_2=$(grep -Po "(?<=Ombi/)([\d\.]+)" 2> /dev/null $WORKING_DIR/Ombi.deps.json | head -1)
 STORAGE_DIR=
 URL=https://github.com/tidusjar/Ombi.Releases/releases/download/v
-KEEP_BACKUP=yes
+KEEP_BACKUP=no
 SLACK_URL=https://hooks.slack.com/services/
 SLACK_WEBHOOK=
 MESSAGE="Updating $SERVICE_NAME to v$VERSION"
 SLACK_CHANNEL=alerts
 SLACK_USER=ombi
-SLACK_POST=$(curl -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${MESSAGE} \"}" $SLACK_URL$SLACK_WEBHOOK)
 DISCORD_WEBHOOK=
-DISCORD_POST=$(curl -H "Content-Type: application/json" -X POST -d "{\"content\": \"$MESSAGE\"}" $DISCORD_WEBHOOK)
 
 # Start script
 # Check for version info in the executable
@@ -40,8 +38,10 @@ elif [ -z $VERSION ]; then
         exit 1
 else
         echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Updating $SERVICE_NAME"
-	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SLACK_POST"
-	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $DISCORD_POST"
+# POST to Slack
+	curl -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${MESSAGE} \"}" $SLACK_URL$SLACK_WEBHOOK
+# POST to Discord	
+	curl -H "Content-Type: application/json" -X POST -d "{\"content\": \"$MESSAGE\"}" $DISCORD_WEBHOOK
 fi
 
 echo  "$(date +"%Y-%m-%d %H:%M:%S.%3N") Stopping $SERVICE_NAME"
