@@ -11,7 +11,7 @@ There are several variables in use you can change to suit your environment:
 > * MESSAGE="Upgrading Ombi to v$VERSION" 	# Adjust if you'd like a different message to the alerts
 > * SLACK_CHANNEL=alerts			# Adjust to the channel you'd use in Slack. Not required.
 > * SLACK_USER=ombi				# Change to the user you'd like the message to come through as. Not required.
-> * DISCORD_WEBHOOK=                        	# Copy and paste this just as you get it from Discord Integrations. No required.
+> * DISCORD_WEBHOOK=                        	# Copy and paste this just as you get it from Discord Integrations. Not required.
 
 This works as a script you can put in (`cp /link/to/script/updateOmbi.sh /etc/cron.daily`) or symlink to (`ln -s /link/to/script/updateOmbi.sh /etc/cron.daily`) in /etc/cron.daily or hourly  
 That will run it as root  
