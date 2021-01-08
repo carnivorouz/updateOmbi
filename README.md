@@ -5,7 +5,7 @@ The assumptions for this script are that you are using Linux for your Ombi and t
  
 There are several variables in use you can change to suit your environment:
 > * SERVICE_NAME=ombi				# Change this if your systemd service is not named 'ombi'
-> * KEEP_BACKUP=no				# Change this to 'yes' if you'd like to keep the previous installation as backup
+> * KEEP_BACKUP=yes				# Change this to depending if you'd like to keep the previous installation as backup or not
 > * STORAGE_DIR=				# If using `--storage` parameter in service script then add that here 
 > * SLACK_WEBHOOK=				# Webhook found in Slack settings.  Not required.
 > * MESSAGE="Upgrading Ombi to v$VERSION" 	# Adjust if you'd like a different message to the alerts
