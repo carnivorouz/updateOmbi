@@ -33,7 +33,7 @@ if [ ! -z "$INSTALLED_1" ]; then
         INSTALLED=$INSTALLED_1
 # Check for version info before it was in the executable
 elif [ ! -z "$INSTALLED_2" ]; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SERVICE_NAME $INSTALLED_2 [INFO] detected. Continuing..."
+        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] $SERVICE_NAME $INSTALLED_2 detected. Continuing..."
         INSTALLED=$INSTALLED_2
 else
         echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Currently installed version of $SERVICE_NAME not detected. Exiting."
