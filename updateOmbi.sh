@@ -17,39 +17,44 @@ SLACK_USER=ombi
 DISCORD_WEBHOOK=
 
 # Start script
-# Root privileges check
+# Privileges check
 if [ "$EUID" -ne 0 ]; then
-	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") WARNING: Not running as root. You must have your sudoers file configured correctly as shown at https://github.com/carnivorouz/updateOmbi"
+	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [WARNING] Not running as root. You must have your sudoers file configured correctly as shown at https://github.com/carnivorouz/updateOmbi"
+fi
+touch $WORKING_DIR/Ombi > /dev/null 2>&1
+if [ $? = 1 ]; then
+        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] User does not have the permission update $SERVICE_NAME"
+        exit 1
 fi
 
 # Check for version info in the executable
 if [ ! -z "$INSTALLED_1" ]; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SERVICE_NAME $INSTALLED_1 detected. Continuing..."
+        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] $SERVICE_NAME $INSTALLED_1 detected. Continuing..."
         INSTALLED=$INSTALLED_1
 # Check for version info before it was in the executable
 elif [ ! -z "$INSTALLED_2" ]; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SERVICE_NAME $INSTALLED_2 detected. Continuing..."
+        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SERVICE_NAME $INSTALLED_2 [INFO] detected. Continuing..."
         INSTALLED=$INSTALLED_2
 else
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Currently installed version of $SERVICE_NAME not detected. Exiting."
+        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Currently installed version of $SERVICE_NAME not detected. Exiting."
         exit 1
 fi
 
 if [ "$INSTALLED" = "$VERSION" ]; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SERVICE_NAME is up to date"
+        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] $SERVICE_NAME is up to date"
 	exit 0
 elif [ -z $VERSION ]; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Latest version of $SERVICE_NAME not found. Exiting."
+        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Latest version of $SERVICE_NAME not found. Exiting."
         exit 1
 else
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Updating $SERVICE_NAME"
+        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Updating $SERVICE_NAME"
 # POST to Slack
 	curl -s -o /dev/null -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${MESSAGE} \"}" $SLACK_URL$SLACK_WEBHOOK
 # POST to Discord	
 	curl -H "Content-Type: application/json" -X POST -d "{\"content\": \"$MESSAGE\"}" $DISCORD_WEBHOOK
 fi
 
-echo  "$(date +"%Y-%m-%d %H:%M:%S.%3N") Stopping $SERVICE_NAME"
+echo  "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Stopping $SERVICE_NAME"
 systemctl stop $SERVICE_NAME
 
 # Check to see if directory has a forward slash at the end and correct it
@@ -62,26 +67,26 @@ fi
 BACKUP_DIR=$WORKING_DIR.$INSTALLED
 TEMP_DIR=$WORKING_DIR.$VERSION
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Creating temporary directory $TEMP_DIR"
+echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Creating temporary directory $TEMP_DIR"
 mkdir $TEMP_DIR
 cd $TEMP_DIR
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Downloading $SERVICE_NAME"
+echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Downloading $SERVICE_NAME"
 wget -N $URL$VERSION/$DOWNLOAD
 
 if [ $? -ne 0 ]; then
-   echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Failed to download"
+   echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Failed to download"
    exit 1
 fi
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Extracting $DOWNLOAD"
+echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Extracting $DOWNLOAD"
 tar -xf $DOWNLOAD
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Shuffling directories"
+echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Shuffling directories"
 mv $WORKING_DIR $BACKUP_DIR
 mv $TEMP_DIR $WORKING_DIR
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Copying over files from $BACKUP_DIR"
+echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Copying over files from $BACKUP_DIR"
 
 if [ -f $STORAGE_DIR/database.json ]; then
   cp $STORAGE_DIR/database.json $WORKING_DIR
@@ -125,15 +130,15 @@ fi
 
 cp -rn $BACKUP_DIR/wwwroot/images/* $WORKING_DIR/wwwroot/images || true
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Changing ownership to $SERVICE_NAME"
+echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Changing ownership to $SERVICE_NAME"
 chown -R $SERVICE_NAME:$SERVICE_NAME $WORKING_DIR
 
 if [ $KEEP_BACKUP == "yes" ]; then
-   echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Keeping $BACKUP_DIR"
+   echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Keeping $BACKUP_DIR"
 elif [ $KEEP_BACKUP == "no" ]; then
-   echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Deleting $BACKUP_DIR"
+   echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Deleting $BACKUP_DIR"
    rm -rf $BACKUP_DIR
 fi
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Starting $SERVICE_NAME"
+echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Starting $SERVICE_NAME"
 systemctl start $SERVICE_NAME
