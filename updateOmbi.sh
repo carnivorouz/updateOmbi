@@ -8,7 +8,7 @@ INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -
 INSTALLED_2=$(grep -Po "(?<=Ombi/)([\d\.]+)" 2> /dev/null $WORKING_DIR/Ombi.deps.json | head -1)
 STORAGE_DIR=
 URL=https://github.com/tidusjar/Ombi.Releases/releases/download/v
-KEEP_BACKUP=no
+KEEP_BACKUP=yes
 SLACK_URL=https://hooks.slack.com/services/
 SLACK_WEBHOOK=
 MESSAGE="Updating $SERVICE_NAME to v$VERSION"
@@ -17,6 +17,11 @@ SLACK_USER=ombi
 DISCORD_WEBHOOK=
 
 # Start script
+# Root privileges check
+if [ "$EUID" -ne 0 ]; then
+	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") WARNING: Not running as root. You must have your sudoers file configured correctly as shown at https://github.com/carnivorouz/updateOmbi"
+fi
+
 # Check for version info in the executable
 if [ ! -z "$INSTALLED_1" ]; then
         echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SERVICE_NAME $INSTALLED_1 detected. Continuing..."
@@ -39,7 +44,7 @@ elif [ -z $VERSION ]; then
 else
         echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Updating $SERVICE_NAME"
 # POST to Slack
-	curl -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${MESSAGE} \"}" $SLACK_URL$SLACK_WEBHOOK
+	curl -s -o /dev/null -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${MESSAGE} \"}" $SLACK_URL$SLACK_WEBHOOK
 # POST to Discord	
 	curl -H "Content-Type: application/json" -X POST -d "{\"content\": \"$MESSAGE\"}" $DISCORD_WEBHOOK
 fi
@@ -119,8 +124,6 @@ if [ -f $BACKUP_DIR/OmbiExternal.db ]; then
 fi
 
 cp -rn $BACKUP_DIR/wwwroot/images/* $WORKING_DIR/wwwroot/images || true
-
-
 
 echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") Changing ownership to $SERVICE_NAME"
 chown -R $SERVICE_NAME:$SERVICE_NAME $WORKING_DIR
