@@ -19,12 +19,7 @@ DISCORD_WEBHOOK=
 # Start script
 # Privileges check
 if [ "$EUID" -ne 0 ]; then
-	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [WARNING] Not running as root. You must have your sudoers file configured correctly as shown at https://github.com/carnivorouz/updateOmbi"
-fi
-touch $WORKING_DIR/Ombi > /dev/null 2>&1
-if [ $? = 1 ]; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] User does not have the permission update $SERVICE_NAME"
-        exit 1
+	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [WARNING] Not running as root. You must have your sudoers file configured correctly."
 fi
 
 # Check for version info in the executable
@@ -56,6 +51,10 @@ fi
 
 echo  "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Stopping $SERVICE_NAME"
 systemctl stop $SERVICE_NAME
+if [ $? = 1 ]; then
+        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] User does not have the permission to control $SERVICE_NAME service"
+        exit 1
+fi
 
 # Check to see if directory has a forward slash at the end and correct it
 if [[ $WORKING_DIR = */ ]]; then
