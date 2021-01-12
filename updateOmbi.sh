@@ -3,12 +3,12 @@ DOWNLOAD=linux-x64.tar.gz
 SERVICE_NAME=ombi
 OMBI_URL=https://github.com/Ombi-io/Ombi.Releases/releases
 VERSION=$(curl -s $OMBI_URL | grep "$DOWNLOAD" | grep -Po ".*\/download\/v([0-9\.]+).*" | awk -F'/' '{print $6}' | tr -d 'v' | sort -n | tail -1)
+OMBI_URL=https://github.com/Ombi-io/Ombi.Releases/releases
 SERVICE_LOC=$(systemctl status $SERVICE_NAME | grep -Po "(?<=loaded \()[^;]+")
 WORKING_DIR=$(grep -Po "(?<=WorkingDirectory=).*" $SERVICE_LOC)
 INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -Po '\d+\.\d+\.\d+' | sort -n | tail -n 1)
 INSTALLED_2=$(grep -Po "(?<=Ombi/)([\d\.]+)" 2> /dev/null $WORKING_DIR/Ombi.deps.json | head -1)
 STORAGE_DIR=
-URL=https://github.com/tidusjar/Ombi.Releases/releases/download/v
 KEEP_BACKUP=yes
 SLACK_URL=https://hooks.slack.com/services/
 SLACK_WEBHOOK=
@@ -72,7 +72,7 @@ mkdir $TEMP_DIR
 cd $TEMP_DIR
 
 echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Downloading $SERVICE_NAME"
-wget -N $URL$VERSION/$DOWNLOAD
+wget -N $OMBI_URL/download/v$VERSION/$DOWNLOAD
 
 if [ $? -ne 0 ]; then
    echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Failed to download"
