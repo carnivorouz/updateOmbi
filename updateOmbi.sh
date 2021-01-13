@@ -1,9 +1,8 @@
 #!/bin/bash
 DOWNLOAD=linux-x64.tar.gz
 SERVICE_NAME=ombi
-OMBI_URL=https://github.com/Ombi-io/Ombi.Releases/releases
+OMBI_URL=https://github.com/Ombi-app/Ombi.Releases/releases
 VERSION=$(curl -s $OMBI_URL | grep "$DOWNLOAD" | grep -Po ".*\/download\/v([0-9\.]+).*" | awk -F'/' '{print $6}' | tr -d 'v' | sort -n | tail -1)
-OMBI_URL=https://github.com/Ombi-io/Ombi.Releases/releases
 SERVICE_LOC=$(systemctl status $SERVICE_NAME | grep -Po "(?<=loaded \()[^;]+")
 WORKING_DIR=$(grep -Po "(?<=WorkingDirectory=).*" $SERVICE_LOC)
 INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -Po '\d+\.\d+\.\d+' | sort -n | tail -n 1)
