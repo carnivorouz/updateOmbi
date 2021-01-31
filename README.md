@@ -6,6 +6,7 @@ The assumptions for this script are that you are using Linux for your Ombi and t
 There are several variables in use you can change to suit your environment:
 > * SERVICE_NAME=ombi				# Change this if your systemd service is not named 'ombi'.
 > * OMBI_URL=					# Change this to the current Ombi github URL if needed. Not Required.
+> * SUPPRESS_OUTPUT=                                # (yes/no) Change this depending if you'd like to suppress the output from the script or not.
 > * KEEP_BACKUP=				# (yes/no) Change this depending if you'd like to keep the previous installation as backup or not.
 > * STORAGE_DIR=				# If using `--storage` parameter in service script then add that here.
 > * SLACK_WEBHOOK=				# Webhook found in Slack settings.  Not required.

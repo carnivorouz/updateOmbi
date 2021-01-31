@@ -9,6 +9,7 @@ INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -
 INSTALLED_2=$(grep -Po "(?<=Ombi/)([\d\.]+)" 2> /dev/null $WORKING_DIR/Ombi.deps.json | head -1)
 STORAGE_DIR=
 KEEP_BACKUP=yes
+SUPPRESS_OUTPUT=no
 SLACK_URL=https://hooks.slack.com/services/
 SLACK_WEBHOOK=
 MESSAGE="Updating $SERVICE_NAME to v$VERSION"
@@ -19,40 +20,59 @@ DISCORD_WEBHOOK=
 # Start script
 # Privileges check
 if [ "$EUID" -ne 0 ]; then
-	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [WARNING] Not running as root. You must have your sudoers file configured correctly."
+	if [ $SUPPRESS_OUTPUT = 'no' ]; then
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [WARNING] Not running as root. You must have your sudoers file configured correctly."
+	fi
 fi
 
 # Check for version info in the executable
 if [ ! -z "$INSTALLED_1" ]; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] $SERVICE_NAME $INSTALLED_1 detected. Continuing..."
+        if [ $SUPPRESS_OUTPUT = 'no' ]; then
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] $SERVICE_NAME $INSTALLED_1 detected. Continuing..."
+	fi
         INSTALLED=$INSTALLED_1
 # Check for version info before it was in the executable
 elif [ ! -z "$INSTALLED_2" ]; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SERVICE_NAME $INSTALLED_2 [INFO] detected. Continuing..."
+        if [ $SUPPRESS_OUTPUT = 'no' ]; then
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SERVICE_NAME $INSTALLED_2 [INFO] detected. Continuing..."
+	fi
         INSTALLED=$INSTALLED_2
 else
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Currently installed version of $SERVICE_NAME not detected. Exiting."
+        if [ $SUPPRESS_OUTPUT = 'no' ]; then
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Currently installed version of $SERVICE_NAME not detected. Exiting."
+	fi
         exit 1
 fi
 
 if [ "$INSTALLED" = "$VERSION" ]; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] $SERVICE_NAME is up to date"
+        if [ $SUPPRESS_OUTPUT = 'no' ]; then
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] $SERVICE_NAME is up to date"
+	fi
 	exit 0
 elif [ -z $VERSION ]; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Latest version of $SERVICE_NAME not found. Exiting."
+        if [ $SUPPRESS_OUTPUT = 'no' ]; then
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Latest version of $SERVICE_NAME not found. Exiting."
+	fi
         exit 1
 else
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Updating $SERVICE_NAME"
+        if [ $SUPPRESS_OUTPUT = 'no' ]; then
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Updating $SERVICE_NAME"
+	fi
 # POST to Slack
 	curl -s -o /dev/null -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${MESSAGE} \"}" $SLACK_URL$SLACK_WEBHOOK
 # POST to Discord	
 	curl -H "Content-Type: application/json" -X POST -d "{\"content\": \"$MESSAGE\"}" $DISCORD_WEBHOOK
 fi
 
-echo  "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Stopping $SERVICE_NAME"
+if [ $SUPPRESS_OUTPUT = 'no' ]; then
+	echo  "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Stopping $SERVICE_NAME"
+fi
+
 systemctl stop $SERVICE_NAME
 if [ $? = 1 ]; then
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] User does not have the permission to control $SERVICE_NAME service"
+        if [ $SUPPRESS_OUTPUT = 'no' ]; then
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] User does not have the permission to control $SERVICE_NAME service"
+	fi
         exit 1
 fi
 
@@ -66,26 +86,43 @@ fi
 BACKUP_DIR=$WORKING_DIR.$INSTALLED
 TEMP_DIR=$WORKING_DIR.$VERSION
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Creating temporary directory $TEMP_DIR"
+if [ $SUPPRESS_OUTPUT = 'no' ]; then
+	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Creating temporary directory $TEMP_DIR"
+fi
 mkdir $TEMP_DIR
 cd $TEMP_DIR
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Downloading $SERVICE_NAME"
-wget -N $OMBI_URL/download/v$VERSION/$DOWNLOAD
+if [ $SUPPRESS_OUTPUT = 'no' ]; then
+	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Downloading $SERVICE_NAME"
+fi
+
+if [ $SUPPRESS_OUTPUT = 'no' ]; then
+	wget -N $OMBI_URL/download/v$VERSION/$DOWNLOAD
+else
+	wget -Nq $OMBI_URL/download/v$VERSION/$DOWNLOAD
+fi
 
 if [ $? -ne 0 ]; then
-   echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Failed to download"
+	if [ $SUPPRESS_OUTPUT = 'no' ]; then
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Failed to download"
+	fi
    exit 1
 fi
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Extracting $DOWNLOAD"
+if [ $SUPPRESS_OUTPUT = 'no' ]; then
+	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Extracting $DOWNLOAD"
+fi
 tar -xf $DOWNLOAD
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Shuffling directories"
+if [ $SUPPRESS_OUTPUT = 'no' ]; then
+	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Shuffling directories"
+fi
 mv $WORKING_DIR $BACKUP_DIR
 mv $TEMP_DIR $WORKING_DIR
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Copying over files from $BACKUP_DIR"
+if [ $SUPPRESS_OUTPUT = 'no' ]; then
+	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Copying over files from $BACKUP_DIR"
+fi
 
 if [ -f $STORAGE_DIR/database.json ]; then
   cp $STORAGE_DIR/database.json $WORKING_DIR
@@ -129,15 +166,23 @@ fi
 
 cp -rn $BACKUP_DIR/wwwroot/images/* $WORKING_DIR/wwwroot/images || true
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Changing ownership to $SERVICE_NAME"
+if [ $SUPPRESS_OUTPUT = 'no' ]; then
+	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Changing ownership to $SERVICE_NAME"
+fi
 chown -R $SERVICE_NAME:$SERVICE_NAME $WORKING_DIR
 
 if [ $KEEP_BACKUP == "yes" ]; then
-   echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Keeping $BACKUP_DIR"
+	if [ $SUPPRESS_OUTPUT = 'no' ]; then
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Keeping $BACKUP_DIR"
+	fi
 elif [ $KEEP_BACKUP == "no" ]; then
-   echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Deleting $BACKUP_DIR"
+	if [ $SUPPRESS_OUTPUT = 'no' ]; then
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Deleting $BACKUP_DIR"
+	fi
    rm -rf $BACKUP_DIR
 fi
 
-echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Starting $SERVICE_NAME"
+if [ $SUPPRESS_OUTPUT = 'no' ]; then
+	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Starting $SERVICE_NAME"
+fi
 systemctl start $SERVICE_NAME
