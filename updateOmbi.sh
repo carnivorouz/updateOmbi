@@ -28,13 +28,13 @@ fi
 # Check for version info in the executable
 if [ ! -z "$INSTALLED_1" ]; then
         if [ $SUPPRESS_OUTPUT = 'no' ]; then
-		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] $SERVICE_NAME $INSTALLED_1 detected. Continuing..."
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] $SERVICE_NAME v$INSTALLED_1 detected. Continuing..."
 	fi
         INSTALLED=$INSTALLED_1
 # Check for version info before it was in the executable
 elif [ ! -z "$INSTALLED_2" ]; then
         if [ $SUPPRESS_OUTPUT = 'no' ]; then
-		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SERVICE_NAME $INSTALLED_2 [INFO] detected. Continuing..."
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $SERVICE_NAME v$INSTALLED_2 [INFO] detected. Continuing..."
 	fi
         INSTALLED=$INSTALLED_2
 else
@@ -56,12 +56,13 @@ elif [ -z $VERSION ]; then
         exit 1
 else
         if [ $SUPPRESS_OUTPUT = 'no' ]; then
-		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Updating $SERVICE_NAME"
+		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Updating $SERVICE_NAME to v$VERSION"
 	fi
+
 # POST to Slack
 	curl -s -o /dev/null -X POST --data "payload={\"channel\": \"#$SLACK_CHANNEL\", \"username\": \"$SLACK_USER\", \"text\": \":exclamation: ${MESSAGE} \"}" $SLACK_URL$SLACK_WEBHOOK
-# POST to Discord	
-	curl -H "Content-Type: application/json" -X POST -d "{\"content\": \"$MESSAGE\"}" $DISCORD_WEBHOOK
+# POST to Discord
+	curl -s -o /dev/null -H "Content-Type: application/json" -X POST -d "{\"content\": \"$MESSAGE\"}" $DISCORD_WEBHOOK
 fi
 
 if [ $SUPPRESS_OUTPUT = 'no' ]; then
@@ -105,6 +106,7 @@ fi
 if [ $? -ne 0 ]; then
 	if [ $SUPPRESS_OUTPUT = 'no' ]; then
 		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Failed to download"
+		rm -f $DOWNLOAD
 	fi
    exit 1
 fi
@@ -113,6 +115,14 @@ if [ $SUPPRESS_OUTPUT = 'no' ]; then
 	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Extracting $DOWNLOAD"
 fi
 tar -xf $DOWNLOAD
+
+if [ $? -ne 0 ]; then
+        if [ $SUPPRESS_OUTPUT = 'no' ]; then
+                echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Failed to extract $DOWNLOAD"
+                rm -f $DOWNLOAD
+        fi
+   exit 1
+fi
 
 if [ $SUPPRESS_OUTPUT = 'no' ]; then
 	echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [INFO] Shuffling directories"
