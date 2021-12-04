@@ -1,5 +1,7 @@
 # updateOmbi
 
+### Update 12/21: I am not longer supporting this.  However, it continues to work for my instance that is still running, and very well may for some time to come. Please feel free to take up the mantle.
+
 ### Notes:
 The assumptions for this script are that you are using Linux for your Ombi and the service is controlled with systemd.  
  
