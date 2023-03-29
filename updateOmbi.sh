@@ -4,7 +4,7 @@ DOWNLOAD_SEARCH=.tar.gz
 SERVICE_NAME=ombi
 OMBI_URL=https://github.com/Ombi-app/Ombi/releases
 OMBI_URL_SEARCH=https://github.com/Ombi-app/Ombi/tags
-VERSION=$(curl -s $OMBI_URL_SEARCH | grep "$DOWNLOAD_SEARCH" | grep -Po ".*\/tags\/v([0-9\.]+).*" | awk -F'/' '{print $7}' | cut -c 1-7 | tr -d 'v' | sort -V | tail -1)
+VERSION=$(curl -s $OMBI_URL_SEARCH | grep "$DOWNLOAD_SEARCH" | grep -Po ".*\/tags\/v([0-9\.]+).*" | awk -F'/' '{print $7}' | cut -c 1-9 | tr -d 'v' | cut -d . -f -3 | sort -V | tail -1)
 SERVICE_LOC=$(systemctl status $SERVICE_NAME | grep -Po "(?<=loaded \()[^;]+")
 WORKING_DIR=$(grep -Po "(?<=WorkingDirectory=).*" $SERVICE_LOC)
 INSTALLED_1=$(strings $WORKING_DIR/Ombi | grep -Po 'Ombi/\d+\.\d+\.\d+' | grep -Po '\d+\.\d+\.\d+' | sort -n | tail -n 1)
