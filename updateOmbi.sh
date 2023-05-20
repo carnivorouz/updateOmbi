@@ -117,6 +117,7 @@ if [ $? -ne 0 ]; then
 	if [ $SUPPRESS_OUTPUT = 'no' ]; then
 		echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Failed to download"
 		rm -f $DOWNLOAD
+		systemctl start $SERVICE_NAME
 	fi
    exit 1
 fi
@@ -130,6 +131,7 @@ if [ $? -ne 0 ]; then
         if [ $SUPPRESS_OUTPUT = 'no' ]; then
                 echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Failed to extract $DOWNLOAD"
                 rm -f $DOWNLOAD
+		systemctl start $SERVICE_NAME
         fi
    exit 1
 fi
