@@ -31,7 +31,7 @@ fi
 if strings --help > /dev/null 2>&1 ; then
         :
 else
-        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Command 'strings' not found. This package needs to be installed through 'sudo dnf install bintuils' or 'sudo apt install binutils'"
+        echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [ERROR] Command 'strings' not found. This package needs to be installed through 'sudo dnf install binutils' or 'sudo apt install binutils'"
 	exit 1
 fi
 
